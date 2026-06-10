@@ -1,3 +1,1 @@
-// Mongoose models will be exported from here.
-
-export {};
+export { Student, IStudent } from './Student';
