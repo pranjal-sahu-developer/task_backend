@@ -25,7 +25,6 @@ const studentSchema = new Schema<IStudent>(
       required: true,
       unique: true,
       trim: true,
-      lowercase: true,
     },
     phoneNumber: {
       type: String,
