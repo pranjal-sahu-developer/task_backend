@@ -3,6 +3,7 @@ import mongoose, { Document, Model, Schema } from 'mongoose';
 export interface IStudent extends Document {
   fullName: string;
   email: string;
+  emailLookup: string;
   phoneNumber: string;
   dateOfBirth: string;
   gender: string;
@@ -23,8 +24,13 @@ const studentSchema = new Schema<IStudent>(
     email: {
       type: String,
       required: true,
-      unique: true,
       trim: true,
+    },
+    emailLookup: {
+      type: String,
+      unique: true,
+      sparse: true,
+      index: true,
     },
     phoneNumber: {
       type: String,

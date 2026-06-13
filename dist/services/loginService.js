@@ -6,10 +6,11 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.loginUser = exports.validateLoginPayload = void 0;
 const bcrypt_1 = __importDefault(require("bcrypt"));
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
-const Student_1 = require("../models/Student");
 const encryption_1 = require("../utils/encryption");
+const emailLookup_1 = require("../utils/emailLookup");
 const AppError_1 = require("../utils/AppError");
 const jwt_1 = require("../utils/jwt");
+const validation_1 = require("../utils/validation");
 const validateLoginPayload = (data) => {
     const missingFields = [];
     if (typeof data.email !== 'string' || data.email.trim() === '') {
@@ -27,28 +28,26 @@ const validateLoginPayload = (data) => {
     };
 };
 exports.validateLoginPayload = validateLoginPayload;
-const findUserByEmail = async (frontendEncryptedEmail) => {
-    const students = await Student_1.Student.find();
-    for (const student of students) {
-        try {
-            const decryptedEmail = (0, encryption_1.decryptLevel2)(student.email);
-            if (decryptedEmail === frontendEncryptedEmail) {
-                return student;
-            }
-        }
-        catch {
-            continue;
-        }
-    }
-    return null;
-};
 const loginUser = async (payload) => {
-    const student = await findUserByEmail(payload.email);
+    const student = await (0, emailLookup_1.findStudentForLogin)(payload.email);
     if (!student) {
         throw (0, AppError_1.createAppError)('Invalid email or password', 401);
     }
+    let loginPassword;
+    try {
+        loginPassword = (0, encryption_1.decryptLevel1)(payload.password);
+        (0, validation_1.validatePasswordStrength)(loginPassword);
+    }
+    catch (error) {
+        if (error instanceof Error &&
+            'statusCode' in error &&
+            error.statusCode === 400) {
+            throw (0, AppError_1.createAppError)('Invalid email or password', 401);
+        }
+        throw (0, AppError_1.createAppError)('Invalid email or password', 401);
+    }
     const storedPasswordHash = (0, encryption_1.decryptLevel2)(student.password);
-    const isPasswordValid = await bcrypt_1.default.compare(payload.password, storedPasswordHash);
+    const isPasswordValid = await bcrypt_1.default.compare(loginPassword, storedPasswordHash);
     if (!isPasswordValid) {
         throw (0, AppError_1.createAppError)('Invalid email or password', 401);
     }

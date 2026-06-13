@@ -23,7 +23,7 @@ const getAllStudents = async (_req, res) => {
 exports.getAllStudents = getAllStudents;
 const update = async (req, res) => {
     const id = req.params.id;
-    const payload = (0, studentService_1.validateEncryptedPayload)(req.body);
+    const payload = (0, studentService_1.validateEncryptedUpdatePayload)(req.body);
     const student = await (0, studentService_1.updateStudent)(id, payload);
     res.status(200).json({
         success: true,

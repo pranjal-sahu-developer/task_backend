@@ -7,6 +7,7 @@ import {
   update,
 } from './controllers/studentController';
 import { asyncHandler } from './middleware/asyncHandler';
+import { authMiddleware } from './middleware/authMiddleware';
 
 const router = Router();
 
@@ -16,8 +17,9 @@ router.get('/health', (_req: Request, res: Response) => {
 
 router.post('/login', asyncHandler(login));
 router.post('/register', asyncHandler(register));
-router.get('/students', asyncHandler(getAllStudents));
-router.put('/student/:id', asyncHandler(update));
-router.delete('/student/:id', asyncHandler(remove));
+
+router.get('/students', authMiddleware, asyncHandler(getAllStudents));
+router.put('/student/:id', authMiddleware, asyncHandler(update));
+router.delete('/student/:id', authMiddleware, asyncHandler(remove));
 
 export default router;

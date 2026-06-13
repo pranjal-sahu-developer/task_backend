@@ -44,8 +44,13 @@ const studentSchema = new mongoose_1.Schema({
     email: {
         type: String,
         required: true,
-        unique: true,
         trim: true,
+    },
+    emailLookup: {
+        type: String,
+        unique: true,
+        sparse: true,
+        index: true,
     },
     phoneNumber: {
         type: String,

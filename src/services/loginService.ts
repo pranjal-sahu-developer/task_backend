@@ -1,9 +1,10 @@
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
-import { Student, IStudent } from '../models/Student';
-import { decryptLevel2 } from '../utils/encryption';
+import { decryptLevel1, decryptLevel2 } from '../utils/encryption';
+import { findStudentForLogin } from '../utils/emailLookup';
 import { createAppError } from '../utils/AppError';
 import { getJwtSecret } from '../utils/jwt';
+import { validatePasswordStrength } from '../utils/validation';
 import { LoginPayload } from '../types/auth.types';
 
 export const validateLoginPayload = (
@@ -32,38 +33,35 @@ export const validateLoginPayload = (
   };
 };
 
-const findUserByEmail = async (
-  frontendEncryptedEmail: string,
-): Promise<IStudent | null> => {
-  const students = await Student.find();
-
-  for (const student of students) {
-    try {
-      const decryptedEmail = decryptLevel2(student.email);
-
-      if (decryptedEmail === frontendEncryptedEmail) {
-        return student;
-      }
-    } catch {
-      continue;
-    }
-  }
-
-  return null;
-};
-
 export const loginUser = async (
   payload: LoginPayload,
 ): Promise<{ token: string }> => {
-  const student = await findUserByEmail(payload.email);
+  const student = await findStudentForLogin(payload.email);
 
   if (!student) {
     throw createAppError('Invalid email or password', 401);
   }
 
+  let loginPassword: string;
+
+  try {
+    loginPassword = decryptLevel1(payload.password);
+    validatePasswordStrength(loginPassword);
+  } catch (error) {
+    if (
+      error instanceof Error &&
+      'statusCode' in error &&
+      (error as { statusCode?: number }).statusCode === 400
+    ) {
+      throw createAppError('Invalid email or password', 401);
+    }
+
+    throw createAppError('Invalid email or password', 401);
+  }
+
   const storedPasswordHash = decryptLevel2(student.password);
   const isPasswordValid = await bcrypt.compare(
-    payload.password,
+    loginPassword,
     storedPasswordHash,
   );
 

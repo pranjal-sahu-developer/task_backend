@@ -5,6 +5,7 @@ import {
   registerStudent,
   updateStudent,
   validateEncryptedPayload,
+  validateEncryptedUpdatePayload,
 } from '../services/studentService';
 
 export const register = async (req: Request, res: Response): Promise<void> => {
@@ -33,7 +34,7 @@ export const getAllStudents = async (
 
 export const update = async (req: Request, res: Response): Promise<void> => {
   const id = req.params.id as string;
-  const payload = validateEncryptedPayload(req.body);
+  const payload = validateEncryptedUpdatePayload(req.body);
   const student = await updateStudent(id, payload);
 
   res.status(200).json({

@@ -9,6 +9,13 @@ export interface EncryptedStudentPayload {
   password: string;
 }
 
+export type EncryptedStudentUpdatePayload = Omit<
+  EncryptedStudentPayload,
+  'password'
+> & {
+  password?: string;
+};
+
 export interface StudentResponse extends EncryptedStudentPayload {
   _id: string;
   createdAt: string;
