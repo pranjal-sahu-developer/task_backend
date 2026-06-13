@@ -8,8 +8,10 @@ const cors_1 = __importDefault(require("cors"));
 const routes_1 = __importDefault(require("./routes"));
 const errorHandler_1 = require("./middleware/errorHandler");
 const app = (0, express_1.default)();
+const normalizeOrigin = (url) => url.replace(/\/+$/, '');
+const allowedOrigin = normalizeOrigin(process.env.CLIENT_URL || 'http://localhost:5173');
 app.use((0, cors_1.default)({
-    origin: process.env.CLIENT_URL || 'http://localhost:5173',
+    origin: allowedOrigin,
     credentials: true,
 }));
 app.use(express_1.default.json());
